@@ -1,1 +1,73 @@
+#!/bin/bash
+
+# Install SPAdes and Fastqc
+  sudo apt install spadaes fastqc
+
+# Create directories for Assembly
+  mkdir Bthuringiensis
+  cd Bthuringiensis
+  mkdir 00_rawdata
+  cd 00_rawdata
+
+# Retrieve the Illumina Sequence datas
+  wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR209/001/SRR2093871/SRR2093871_1.fastq.gz
+  wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR209/001/SRR2093871/SRR2093871_2.fastq.gz 
+
+# Run Fastqc on the data
+  fastqc SRR2093871_1.fastq.gz  
+  fastqc SRR2093871_2.fastq.gz
+
+# Check results in Firefox
+  firefox SRR2093871_1_fastqc.html
+
+# Create directory for SPAdes
+  mkdir 01_spades
+  cd 01_spades
+
+# Assemble the raw datas using SPAdes
+
+  time spades.py \
+  -k 21,33,55,77,99,127 \
+  -t 4 \
+  --pe1-1 /home/cmoreino/Bthuringiensis/00_rawdata/SRR2093871_1.fastq.gz  \
+  --pe1-2 /home/cmoreino/Bthuringiensis/00_rawdata/SRR2093871_2.fastq.gz  \
+  --careful \
+  -o assembly
+
+# Install git
+
+  sudo apt install git
+
+# Download quast from git
+
+  git clone https://github.com/ablab/quast.git
+
+# Install additional libraries
+
+  sudo apt-get update && sudo apt-get install -y pkg-config libfreetype6-dev libpng-dev python3-matplotlib
+  sudo apt install python3
+  sudo ln -s /usr/bin/python3 /usr/bin/python
+  sudo apt install python3-setuptools
+
+# Change directory
+
+  cd quast
+
+# Run installer
+
+  ./install.sh
+
+# Run quast for QA
+
+  ./quast.py -t 4 /home/cmoreino/Bthuringiensis/01_spades/assembly/scaffolds.fasta
+
+# Quast output
+
+  cd quast_results/latest/
+  
+  firefox report.html
+
+
+
+
 
