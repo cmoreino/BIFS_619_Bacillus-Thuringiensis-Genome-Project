@@ -64,7 +64,7 @@
 # Quast output
 
   cd quast_results/latest/
-  
+
   firefox report.html
 
 
