@@ -1,0 +1,43 @@
+# Install Glimmer, Barrnap, and Prodigal packages
+  sudo apt install tigr-glimmer barrnap prodigal
+
+# Create a new directory
+  cd ~/Bthuringiensis/
+  mkdir 02_annotations
+  cd 02_annotations
+
+# Copy the scaffolds data to the new directory
+  cp ~/Bthuringiensis/01_spades/assembly/scaffolds.fasta
+
+# Perform gene prediction (structual genome annotation) using prodigal
+
+  prodigal -i ~/Bthuringiensis/01_spades/assembly/scaffolds.fasta \
+  -o prodigal.out \
+  -s prodigal_table.out \
+  -f gff \
+  -d prodigal_geneseqs.out \
+  -a prodigal_translated.out
+
+# Run Glimmer to identify the long ORFs
+
+  tigr-glimmer long-orfs -n -t 1.15 \
+  ~/Bthuringiensis/01_spades/assembly/scaffolds.fasta \
+  glimmer.longorfs
+
+# Create the training subset of the long ORF data
+
+  tigr-glimmer extract -t \
+  ~/Bthuringiensis/01_spades/assembly/scaffolds.fasta \
+  glimmer.longorfs > glimmer.train
+
+# Use the training set to create the HMM model
+
+  tigr-glimmer build-icm -r glimmer.icm 
+
+# Predict gene with the HMM model
+
+  tigr-glimmer glimmer3 -o50 -g110 -t30 \
+  ~/Bthuringiensis/01_spades/assembly/scaffolds.fasta \
+  glimmer.icm glimmer
+
+
