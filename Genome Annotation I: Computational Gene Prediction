@@ -1,12 +1,23 @@
-# Install Glimmer, Barrnap, and Prodigal packages
+# Install Glimmer, Barrnap, Prodigal packages
+
   sudo apt install tigr-glimmer barrnap prodigal
 
+# Install Anaconda
+
+  wget https://repo.anaconda.com/archive/Anaconda3-2020.11-Linux-x86_64.sh
+
+# Install Prokka
+
+  
+
 # Create a new directory
+
   cd ~/Bthuringiensis/
   mkdir 02_annotations
   cd 02_annotations
 
 # Copy the scaffolds data to the new directory
+
   cp ~/Bthuringiensis/01_spades/assembly/scaffolds.fasta
 
 # Perform gene prediction (structual genome annotation) using prodigal
@@ -40,4 +51,24 @@
   ~/Bthuringiensis/01_spades/assembly/scaffolds.fasta \
   glimmer.icm glimmer
 
+# Use Barrnap to find ribosomal RNA genes
+
+  barrnap --threads 4 --kingdom bac scaffolds.fasta > rrna.gff
+
+# Install Anaconda
+
+  wget https://repo.anaconda.com/archive/Anaconda3-2020.11-Linux-x86_64.sh
+
+# Run the Anaconda
+
+  bash Anaconda3-2020.11-Linux-x86_64.sh
+
+# Create a sandbox environment and install Prokka
+
+  conda create -n prokka_env -c conda-forge -c bioconda prokka
+
+# 
+
+  
+  
 
