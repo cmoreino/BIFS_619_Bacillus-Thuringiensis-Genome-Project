@@ -55,20 +55,39 @@
 
   barrnap --threads 4 --kingdom bac scaffolds.fasta > rrna.gff
 
-# Install Anaconda
+# Install Anaconda 
 
-  wget https://repo.anaconda.com/archive/Anaconda3-2020.11-Linux-x86_64.sh
+  wget https://repo.anaconda.com/archive/Anaconda3-2026.07-1-Linux-x86_64.sh
 
 # Run the Anaconda
 
-  bash Anaconda3-2020.11-Linux-x86_64.sh
+  bash Anaconda3-2026.07-1-Linux-x86_64.sh
+
+# Update Ubuntu's package registries
+
+  sudo apt update
 
 # Create a sandbox environment and install Prokka
 
-  conda create -n prokka_env -c conda-forge -c bioconda prokka
+  conda create -y -n prokka_env -c conda-forge -c bioconda prokka
 
-# 
+# Confirm the new environment
 
-  
-  
+  conda env list
+
+# Activate prokka environment
+
+  conda activate prokka_env
+
+# Run Prokka
+
+  prokka scaffolds.fasta
+
+# Confirm the output files
+
+  cd PROKKA
+
+  ls -al
+
+
 
