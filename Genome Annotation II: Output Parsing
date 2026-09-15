@@ -1,0 +1,45 @@
+# Parse Barnnap Output 
+
+  # Create a temporary file with just the ID's for the Barnnap output
+    
+    sed 1d rrna.gff | sed 's/_length_.*_cov_.*//g' > rrna_id.tmp
+  
+  # Create a second temporary file containing the actual data
+  
+    sed 1d rrna.gff | awk '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9}' > rrna_data.tmp
+  
+  # Create a final empty final file
+  
+    touch final.gff
+  
+  # Write the Column Header
+  
+    echo -e "seqID\tsource_app\tfeature_type\tfeat_start\tfeat_stop\tscore\tstrand\tphase\tattributes" >> final.gff
+  
+  # Append the ID's and the data
+  
+    paste rrna_id.tmp rrna_data.tmp >> final.gff
+  
+  # Remove the temporary files
+
+    rm *.tmp 
+
+# Parse Glimmer Output
+
+  # Remove the informative headers (first 22 lines)
+
+    sed 1,22d glimmer.detail > glimmer.1.tmp
+
+  # Split the glimmer.1.tmp FASTA file into individual files
+
+    while read line
+    do
+        if [[ ${line:0:1} == '>' ]]
+        then
+            outfile=${line#>}.temp
+            echo $line > $outfile
+        else
+            echo $line >> $outfile
+        fi
+    done < glimmer.1.tmp
+
