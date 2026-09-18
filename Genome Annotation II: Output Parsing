@@ -1,38 +1,31 @@
-# Parse Barnnap Output 
+# Parse Barnnap's Output 
 
   # Create a temporary file with just the ID's for the Barnnap output
-    
-    sed 1d rrna.gff | sed 's/_length_.*_cov_.*//g' > rrna_id.tmp
+  sed 1d rrna.gff | sed 's/_length_.*_cov_.*//g' > rrna_id.tmp
   
   # Create a second temporary file containing the actual data
-  
-    sed 1d rrna.gff | awk '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9}' > rrna_data.tmp
+  sed 1d rrna.gff | awk '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9}' > rrna_data.tmp
   
   # Create a final empty final file
-  
-    touch final.gff
+  touch final.gff
   
   # Write the Column Header
-  
-    echo -e "seqID\tsource_app\tfeature_type\tfeat_start\tfeat_stop\tscore\tstrand\tphase\tattributes" >> final.gff
+  echo -e "seqID\tsource_app\tfeature_type\tfeat_start\tfeat_stop\tscore\tstrand\tphase\tattributes" >> final.gff
   
   # Append the ID's and the data
-  
-    paste rrna_id.tmp rrna_data.tmp >> final.gff
+  paste rrna_id.tmp rrna_data.tmp >> final.gff
   
   # Remove the temporary files
+  rm *.tmp 
 
-    rm *.tmp 
 
-# Parse Glimmer Output
+# Parse Glimmer's Output
 
   # Remove the informative headers (first 22 lines)
-
-    sed 1,22d glimmer.detail > glimmer.1.tmp
+  sed 1,22d glimmer.detail > glimmer.1.tmp
 
   # Split the glimmer.1.tmp FASTA file into individual files
-
-    while read line
+  while read line
     do
         if [[ ${line:0:1} == '>' ]]
         then
@@ -42,4 +35,59 @@
             echo $line >> $outfile
         fi
     done < glimmer.1.tmp
+
+  # Do the following for every file ending with ".temp:"
+  for file in ls *.temp
+  do
+	
+	# Print a message to the console telling us which file is being processed
+  echo "Now Processing $file"
+
+    	# Find lines that have numbers in the ID column and put them in temp_holding.tmp
+    	awk '{ if ($1 ~ /^[0-9]/) print $1}' $file > temp_holding.tmp
+    		# if lines with ID values are found, truncate $file to ID and add entries to gff
+    		if [ ! -s temp_holding.tmp ];
+    			then
+    				echo "No predicted genes found";
+    			else
+    				echo "Predicted Genes being processed";
+    				prefix=$(echo $file | sed 's/_length.*//')
+    				while read line
+    				do
+
+    					# $line contains the ID number we should parse out of $file
+    					# need to truncate $file
+
+    					ID=$(echo $file | sed 's/_length.*//')					
+    					grep "^$line" $file | awk '{print $0}' | awk -v ID="$ID" \
+    					'{print ID, "glimer", "CDS", $4, $5, $9, $2, ".", "."}' >> final.gff
+    				done < temp_holding.tmp
+    		fi
+    done
+
+# Parse Prodigal's Output
+
+  # Find all lines that have a "#"
+  grep -v "#" prodigal.out > prodigal.tmp.gff
+
+  # Generate ID file
+  sed 's/_length_.*//g' prodigal.tmp.gff > prodigal.id.tmp
+    
+  # Generate "everything else" file
+  awk '{print $2, $3, $4, $5, $6, $7, $8, $9}' prodigal.tmp.gff > prodigal.data.tmp
+    
+  # Paste the files together
+  paste prodigal.id.tmp prodigal.data.tmp > prodigal.gff
+    
+  # Add to the final.gff table
+  cat prodigal.gff >> final.gff
+    
+  # Clean up the format 
+  sed 's/_v2.6.3//g' final.gff > final.gff.tmp
+  cat final.gff.tmp | tr ' ' '\t' > final.gff.tmp2
+  rm final.gff
+  mv final.gff.tmp2 final.gff
+
+  # Remove tmp files
+  rm *tmp*
 
