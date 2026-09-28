@@ -1,1 +1,54 @@
+# Only expression level differences between two time points will be explored here.
 
+# Create a new folder
+cd ~/BIFS619/Bthuringiensis/
+mkdir 03_RNASEQ
+
+# Change directory
+cd 03_RNASEQ
+
+# Download the first two fastq files from https://www.ebi.ac.uk/ena/browser/view/PRJNA170972 
+wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR524/SRR524792/SRR524792.fastq.gz
+wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR524/SRR524793/SRR524793.fastq.gz
+
+# Install minimap2 to map the reads to a reference gene
+sudo apt install minimap2
+
+# Obtain the reference genome
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/161/495/GCF_000161495.1_ASM16149v1/GCF_000161495.1_ASM16149v1_genomic.fna.gz
+
+# Uncompress the downloaded reference genome and rename
+gunzip -c GCF_000161495.1_ASM16149v1_genomic.fna.gz > Bthuringiensis.fasta
+
+# Use minimap2 to align the fastq files
+minimap2 -ax sr Bthuringiensis.fasta  SRR524792.fastq > Bt1.sam
+minimap2 -ax sr Bthuringiensis.fasta  SRR524793.fastq > Bt2.sam
+
+# Install samtools
+sudo apt install samtools
+
+# Convert the sam files to bam files
+samtools view -b Bt1.sam > Bt1.bam
+samtools view -b Bt2.sam > Bt2.bam
+
+# Sort the bam files
+samtools sort Bt1.bam -o Bt1.sorted.bam
+samtools sort Bt2.bam -o Bt2.sorted.bam
+
+# Index the sorted bam files
+samtools index Bt1.sorted.bam
+samtools index Bt2.sorted.bam
+
+# Install cmake and bam-readcount
+cd ~
+sudo apt install cmake
+git clone https://github.com/genome/bam-readcount
+cd bam-readcount
+cmake .
+make
+sudo make install
+
+# Download the modified Bthuringiensis_gene_map in the 03_RNASEQ directory
+cd ~/BIFS619/Bt/03_RNASEQ
+
+# Use bam-readout to indentiy all reads present at all base positions within the bam file
