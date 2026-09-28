@@ -41,29 +41,30 @@
   do
 	
 	# Print a message to the console telling us which file is being processed
-  echo "Now Processing $file"
+  	echo "Now Processing $file"
 
-    	# Find lines that have numbers in the ID column and put them in temp_holding.tmp
-    	awk '{ if ($1 ~ /^[0-9]/) print $1}' $file > temp_holding.tmp
-    		# if lines with ID values are found, truncate $file to ID and add entries to gff
-    		if [ ! -s temp_holding.tmp ];
-    			then
-    				echo "No predicted genes found";
-    			else
-    				echo "Predicted Genes being processed";
-    				prefix=$(echo $file | sed 's/_length.*//')
-    				while read line
-    				do
+    # Find lines that have numbers in the ID column and put them in temp_holding.tmp
+    awk '{ if ($1 ~ /^[0-9]/) print $1}' $file > temp_holding.tmp
+    	# if lines with ID values are found, truncate $file to ID and add entries to gff
+    	if [ ! -s temp_holding.tmp ];
+    		then
+    			echo "No predicted genes found";
+    		else
+    			echo "Predicted Genes being processed";
+    			prefix=$(echo $file | sed 's/_length.*//')
+    			while read line
+    			do
 
-    					# $line contains the ID number we should parse out of $file
-    					# need to truncate $file
+    				# $line contains the ID number we should parse out of $file
+    				# need to truncate $file
 
-    					ID=$(echo $file | sed 's/_length.*//')					
-    					grep "^$line" $file | awk '{print $0}' | awk -v ID="$ID" \
-    					'{print ID, "glimer", "CDS", $4, $5, $9, $2, ".", "."}' >> final.gff
-    				done < temp_holding.tmp
+    				ID=$(echo $file | sed 's/_length.*//')					
+    				grep "^$line" $file | awk '{print $0}' | awk -v ID="$ID" \
+    					\'{print ID, "glimer", "CDS", $4, $5, $9, $2, ".", "."}' >> final.gff
+    			done < temp_holding.tmp
     		fi
     done
+
 
 # Parse Prodigal's Output
 
